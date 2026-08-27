@@ -25,6 +25,12 @@ export function useAsync<T>(loader: (signal: AbortSignal) => Promise<T>, deps: R
 
   const retry = useCallback(() => setRetryToken((t) => t + 1), []);
 
+  // `loader` is intentionally excluded: callers memoize it with useCallback,
+  // and including it here would refetch on every render for callers that
+  // don't. `retryToken` is appended so `retry()` can force a refetch even
+  // when none of the real dependencies changed.
+  const effectDeps = [...deps, retryToken];
+
   useEffect(() => {
     const controller = new AbortController();
     const requestId = ++requestIdRef.current;
@@ -45,8 +51,8 @@ export function useAsync<T>(loader: (signal: AbortSignal) => Promise<T>, deps: R
       });
 
     return () => controller.abort();
-    // deps is caller-supplied and intentionally spread; retryToken forces a manual refetch.
-  }, [...deps, retryToken]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, effectDeps);
 
   return { data, status, error, retry };
 }

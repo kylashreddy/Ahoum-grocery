@@ -1,0 +1,40 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", system-ui, "Segoe UI", Roboto, sans-serif;
+
+  --color-brand-50: #eefbf1;
+  --color-brand-100: #d5f5dd;
+  --color-brand-200: #aeebbe;
+  --color-brand-300: #79da96;
+  --color-brand-400: #47c46e;
+  --color-brand-500: #2fa855;
+  --color-brand-600: #228943;
+  --color-brand-700: #1e6d38;
+  --color-brand-800: #1c5730;
+  --color-brand-900: #17472a;
+
+  --color-surface: #ffffff;
+  --color-surface-muted: #f6f7f5;
+  --color-ink: #14181a;
+  --color-ink-muted: #6b7280;
+  --color-danger: #dc2626;
+  --color-danger-bg: #fdecec;
+}
+
+@layer base {
+  html {
+    color-scheme: light;
+  }
+
+  body {
+    @apply bg-surface-muted text-ink antialiased;
+  }
+
+  /* Visible focus ring for keyboard navigation on every interactive element. */
+  :focus-visible {
+    outline: 2px solid var(--color-brand-500);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+}

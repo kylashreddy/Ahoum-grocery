@@ -29,3 +29,13 @@ Tool used throughout: **Claude Code** (Sonnet 4.5), in an agentic session with d
 2. **The 20-unit-per-cart-line cap was enforced in `addItem` but not in `setQuantity`.** The initial implementation hardcoded the cap inline inside `addItem` only; the cart screen's own +/− stepper calls `setQuantity`, which had no cap at all, so a high-stock product's quantity could be pushed arbitrarily high directly from the cart screen while the product-card "+" button silently stopped working at 20 for the same product. Caught by re-reading every mutation path against the stated business rule rather than assuming one enforcement point was enough. Fixed by extracting a single `maxAllowedQuantity()` helper used by every mutation path and every disabled-state check. Write-up in [DEBUGGING.md](DEBUGGING.md#2-the-carts-own-quantity-stepper-could-bypass-the-20-per-item-cap).
 
 Both fixes are covered by unit tests added specifically to catch a regression of the same bug (`cartStore.test.ts`), not just to demonstrate the fix once.
+
+## Prompt 3 — "Check the Figma design one more time and verify or modify"
+
+**Prompt:** asked to re-verify the built app against the Figma file rather than trust the first pass.
+
+**What this caught:** the first implementation pass had invented plausible-looking but wrong Brand filter values ("Osaria", "Rald", "Kid Famous") instead of reading them precisely off the Filters screen at a legible zoom level. Re-inspecting at 200% zoom showed the real values are **Individual Collection, Cocola, Ifad, Kazi Farmas**. Separately, this pass also caught a structural omission: the Figma Filters screen has both a "Categories" section (Eggs / Noodles & Pasta / Chips & Crisps / Fast Food) and a "Brand" section, but the first build only implemented "Brand".
+
+**What I changed:** replaced the three wrong brand values everywhere they appeared (`Brand` type, all mock products, `FiltersPanel`, `SearchScreen`'s placeholder copy). Added the missing "Categories" checkbox group to `FiltersPanel`, and — since `CategoryScreen` is scoped to one category by route — implemented it as a union filter: checking another category fetches and merges its products into the current view rather than only ever narrowing results, which is the only interpretation that makes sense given a single-category route.
+
+**How verified:** `tsc -b`, the full test suite, and a production build all stayed clean; then confirmed live in the browser that toggling "Chips & Crisps" while on the Beverages category page expanded the result count from 5 to 8 (the correct union), and that the Filters panel now visually matches the Figma's two-section (Categories + Brand) structure.

@@ -58,7 +58,7 @@ export function SearchScreen() {
 
           <div className="mt-5">
             {status === "idle" && query.trim() === "" && (
-              <EmptyState icon="🔎" title="Search for anything" description="Try “apple”, “Rald”, or “beverages”." />
+              <EmptyState icon="🔎" title="Search for anything" description="Try “apple”, “Ifad”, or “beverages”." />
             )}
 
             {status === "loading" && <ProductGridSkeleton count={6} />}

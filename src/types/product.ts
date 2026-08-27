@@ -15,11 +15,12 @@ export interface Category {
   color: string;
 }
 
+// Exact brand names from the Figma Filters screen — kept verbatim for fidelity.
 export type Brand =
   | "Individual Collection"
-  | "Osaria"
-  | "Rald"
-  | "Kid Famous";
+  | "Cocola"
+  | "Ifad"
+  | "Kazi Farmas";
 
 export interface Product {
   id: string;

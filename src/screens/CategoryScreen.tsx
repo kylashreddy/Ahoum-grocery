@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
-import type { Brand, CategoryId } from "../types/product";
+import type { Brand, CategoryId, Product } from "../types/product";
 import { fetchProductsByCategory } from "../api/products";
 import { useAsync } from "../hooks/useAsync";
 import { categoryName } from "../mocks/categories";
@@ -12,8 +12,18 @@ import { ScreenHeader } from "../components/layout/ScreenHeader";
 import { FiltersPanel } from "../components/FiltersPanel";
 import { FilterIcon, CloseIcon } from "../components/icons";
 
+async function fetchCategories(ids: CategoryId[], signal: AbortSignal): Promise<Product[]> {
+  const results = await Promise.all(ids.map((id) => fetchProductsByCategory(id, { signal })));
+  const byId = new Map<string, Product>();
+  for (const list of results) {
+    for (const product of list) byId.set(product.id, product);
+  }
+  return [...byId.values()];
+}
+
 export function CategoryScreen() {
   const { categoryId = "" } = useParams<{ categoryId: CategoryId }>();
+  const [selectedCategories, setSelectedCategories] = useState<CategoryId[]>([]);
   const [selectedBrands, setSelectedBrands] = useState<Brand[]>([]);
   const [inStockOnly, setInStockOnly] = useState(false);
   const [filtersOpen, setFiltersOpen] = useState(false);
@@ -35,8 +45,14 @@ export function CategoryScreen() {
     };
   }, [filtersOpen]);
 
-  const loader = useCallback((signal: AbortSignal) => fetchProductsByCategory(categoryId as CategoryId, { signal }), [categoryId]);
-  const { data, status, retry } = useAsync(loader, [categoryId]);
+  // The Categories filter lets a shopper pull in other categories' products
+  // alongside the one they navigated to, rather than just narrowing it.
+  const categoryIds = useMemo(
+    () => [...new Set([categoryId as CategoryId, ...selectedCategories])],
+    [categoryId, selectedCategories],
+  );
+  const loader = useCallback((signal: AbortSignal) => fetchCategories(categoryIds, signal), [categoryIds]);
+  const { data, status, retry } = useAsync(loader, [categoryIds.join(",")]);
 
   const filtered = useMemo(() => {
     if (!data) return [];
@@ -47,13 +63,26 @@ export function CategoryScreen() {
     });
   }, [data, inStockOnly, selectedBrands]);
 
+  const toggleCategory = (id: CategoryId) =>
+    setSelectedCategories((prev) => (prev.includes(id) ? prev.filter((c) => c !== id) : [...prev, id]));
   const toggleBrand = (brand: Brand) =>
     setSelectedBrands((prev) => (prev.includes(brand) ? prev.filter((b) => b !== brand) : [...prev, brand]));
   const clearFilters = () => {
+    setSelectedCategories([]);
     setSelectedBrands([]);
     setInStockOnly(false);
   };
-  const activeFilterCount = selectedBrands.length + (inStockOnly ? 1 : 0);
+  const activeFilterCount = selectedCategories.length + selectedBrands.length + (inStockOnly ? 1 : 0);
+
+  const filtersPanelProps = {
+    selectedCategories,
+    onToggleCategory: toggleCategory,
+    selectedBrands,
+    onToggleBrand: toggleBrand,
+    inStockOnly,
+    onToggleInStockOnly: () => setInStockOnly((v) => !v),
+    onClear: clearFilters,
+  };
 
   return (
     <div>
@@ -79,13 +108,7 @@ export function CategoryScreen() {
         <div className="mx-auto flex max-w-7xl gap-8">
           <aside className="hidden w-56 flex-shrink-0 lg:block">
             <h1 className="mb-4 text-lg font-semibold text-ink">{categoryName(categoryId)}</h1>
-            <FiltersPanel
-              selectedBrands={selectedBrands}
-              onToggleBrand={toggleBrand}
-              inStockOnly={inStockOnly}
-              onToggleInStockOnly={() => setInStockOnly((v) => !v)}
-              onClear={clearFilters}
-            />
+            <FiltersPanel {...filtersPanelProps} />
           </aside>
 
           <div className="min-w-0 flex-1">
@@ -125,13 +148,7 @@ export function CategoryScreen() {
           </div>
 
           <div className="flex-1 overflow-y-auto px-4 py-5">
-            <FiltersPanel
-              selectedBrands={selectedBrands}
-              onToggleBrand={toggleBrand}
-              inStockOnly={inStockOnly}
-              onToggleInStockOnly={() => setInStockOnly((v) => !v)}
-              onClear={clearFilters}
-            />
+            <FiltersPanel {...filtersPanelProps} />
           </div>
 
           <div className="border-t border-black/5 p-4">

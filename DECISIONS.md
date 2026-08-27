@@ -23,7 +23,20 @@ Non-trivial decisions, why they went the way they did, and what was traded off. 
 
 **Trade-off.** If a product goes out of stock *while the app is already open* (impossible here since the catalogue is static mock data, but would matter with a real backend), the cart won't notice until the next full load. Given the brief frames this as a "refresh" scenario specifically, once-per-load matches the actual requirement; a real backend would likely also want a lighter-weight check on checkout as a second line of defence.
 
-## 3. Checkout failure is a random ~25% chance, not a hidden debug toggle
+## 3. Persisted cart consistency: drop, adopt, or clamp — never leave a line untouched and wrong
+
+**The ambiguity.** The brief lists three cases a persisted cart can drift into (deleted product, stale price, bad quantity) and asks for a documented, resilient behaviour — but leaves the actual resolution for each case open.
+
+**Options considered, per case.**
+- Product no longer in the dataset, or now out of stock — silently dropping it with no explanation would leave the total right but the line count mysteriously different from what the shopper remembers; instead it's dropped *and* surfaced in the reconciliation banner ("no longer available" / "out of stock").
+- Price differs from the live dataset — charging the old, persisted price would be wrong at checkout; charging the new price silently would make the total change with no explanation. Chosen: adopt the live price and say so in the banner, rather than either silently trusting stale data or silently overriding it.
+- Quantity is zero, above current stock, or above the 20-per-item cap — clamp into the valid range (or drop if that range is empty) rather than reject the whole cart or crash on the invalid line.
+
+**Why not something simpler**, like clearing the whole cart on any inconsistency: that punishes a shopper for one bad line among several good ones, and defeats the point of persisting the cart at all.
+
+**Trade-off.** Every one of these choices favours *telling the user something changed* over either silence or refusal — that's more UI (the `ReconciliationBanner`) and more logic (`reconcileLine`, unit-tested in `cartReconciliation.test.ts`) than just clamping numbers quietly, but it's the difference between "resilient" and "resilient but confusing."
+
+## 4. Checkout failure is a random ~25% chance, not a hidden debug toggle
 
 **The ambiguity.** The brief wants both a success and a failure checkout state to exist and be reachable, but doesn't say how.
 
@@ -34,7 +47,7 @@ Non-trivial decisions, why they went the way they did, and what was traded off. 
 
 **Trade-off.** Less deterministic for a reviewer who wants to see the failure screen on the first try — mitigated by the ~1-in-4 odds making it easy to hit within a couple of attempts, and by the failure screen's "Try again" button routing straight back to `/checkout` with the cart intact.
 
-## 4. Product imagery is generated inline (SVG data URIs), not fetched from a photo API
+## 5. Product imagery is generated inline (SVG data URIs), not fetched from a photo API
 
 **The ambiguity.** Nothing in the brief mandates real photography, and "no backend required" pushes toward self-contained mock data.
 

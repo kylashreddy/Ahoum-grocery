@@ -17,8 +17,7 @@ import { useCartStore } from "./stores/cartStore";
 function App() {
   const reconcile = useCartStore((s) => s.reconcile);
 
-  // Reconcile the persisted cart against the live catalogue once, right
-  // after rehydration — engineering challenge B. See DECISIONS.md.
+  // Reconciles the persisted cart against live data once per load. See DECISIONS.md #3.
   useEffect(() => {
     reconcile();
   }, [reconcile]);

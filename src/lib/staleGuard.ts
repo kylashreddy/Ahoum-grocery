@@ -6,15 +6,8 @@ export interface StaleGuardLogEntry {
 
 export type GuardedResult<T> = { stale: true } | { stale: false; value: T };
 
-/**
- * Tracks the most recently *started* async request and discards the result
- * of any earlier request that resolves after it — the fix for engineering
- * challenge A (stale search responses). Kept framework-agnostic and
- * synchronous-to-construct so it's trivial to unit test without React.
- *
- * Usage: each call to `run` bumps the "current" request id. When the task
- * settles, its result is only honoured if no newer call has started since.
- */
+// Ignores the result of any request that's no longer the latest one when it
+// settles — framework-agnostic so it's testable without React (see staleGuard.test.ts).
 export class LatestRequestGuard<T> {
   private currentId = 0;
   readonly log: StaleGuardLogEntry[] = [];

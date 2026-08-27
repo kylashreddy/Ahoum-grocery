@@ -4,11 +4,7 @@ export interface CheckoutResult {
   orderId: string;
 }
 
-/**
- * Simulates placing an order. Fails ~25% of the time so both the success
- * and failure checkout states are easy to reach during review — see
- * CheckoutFailureScreen for a manual "retry" affordance.
- */
+// Fails ~25% of the time so both checkout outcomes are easy to hit. See DECISIONS.md #4.
 export async function placeOrder(total: number): Promise<CheckoutResult> {
   try {
     return await simulateNetwork(

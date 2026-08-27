@@ -8,10 +8,7 @@ interface SessionState {
   logOut: () => void;
 }
 
-/**
- * Deliberately minimal per the brief: onboarding/auth is represented by a
- * single entry/login state, not a full auth flow.
- */
+// Auth is a single entry/login state per the brief, not a full auth flow.
 export const useSessionStore = create<SessionState>()(
   persist(
     (set) => ({

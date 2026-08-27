@@ -1,7 +1,4 @@
-/**
- * Generates a self-contained SVG data URI for a product image so the app has
- * no external image dependency (offline-friendly, no licensing concerns).
- */
+// Self-contained SVG data URI — no external image dependency. See DECISIONS.md #5.
 export function placeholderImage(emoji: string, bg: string): string {
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="240" height="240" viewBox="0 0 240 240">
     <rect width="240" height="240" rx="24" fill="${bg}"/>

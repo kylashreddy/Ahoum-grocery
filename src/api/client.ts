@@ -21,11 +21,7 @@ const DEFAULTS: Required<Pick<NetworkOptions, "minMs" | "maxMs" | "failRate">> =
   failRate: 0,
 };
 
-/**
- * Simulates a real network call: random latency (200-1200ms by default) and
- * an optional random failure rate, honouring an AbortSignal so callers can
- * cancel in-flight requests (used to protect against stale responses).
- */
+// Random 200-1200ms latency (by default) and an optional failure rate, abortable.
 export function simulateNetwork<T>(value: T | (() => T), options: NetworkOptions = {}): Promise<T> {
   const { minMs, maxMs, failRate } = { ...DEFAULTS, ...options };
   const delay = minMs + Math.random() * (maxMs - minMs);

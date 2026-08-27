@@ -19,17 +19,9 @@ export interface UseProductSearchResult {
 
 const DEBOUNCE_MS = 200;
 
-/**
- * Search hook that is safe against out-of-order network responses
- * (engineering challenge A). Two independent safeguards are layered:
- *  1. An AbortController cancels the in-flight request as soon as the query
- *     changes, so the browser stops the old request outright.
- *  2. A LatestRequestGuard additionally ignores the *result* of any request
- *     that is no longer the latest one, even if it wasn't (or couldn't be)
- *     aborted in time. This covers the exact race in the brief: request A
- *     starts, request B starts and returns first, A returns later — A's
- *     result must never overwrite B's.
- */
+// Abort cancels the previous request outright; the guard is a second,
+// independent check that only honours a result if nothing newer has started
+// since — so an aborted-too-late request can't overwrite a fresher one either.
 export function useProductSearch(): UseProductSearchResult {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<Product[]>([]);

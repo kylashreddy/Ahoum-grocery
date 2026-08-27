@@ -1,11 +1,7 @@
 import { useCartStore } from "../stores/cartStore";
 import { CloseIcon } from "./icons";
 
-/**
- * Surfaces what changed when the persisted cart was reconciled against live
- * data on load (engineering challenge B) — items removed, price updates,
- * quantity clamps — instead of silently mutating totals.
- */
+// Shows what reconcile() changed on load, instead of silently mutating totals.
 export function ReconciliationBanner() {
   const notes = useCartStore((s) => s.lastReconciliation);
   const dismiss = useCartStore((s) => s.dismissReconciliation);

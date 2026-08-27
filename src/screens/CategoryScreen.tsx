@@ -30,23 +30,22 @@ export function CategoryScreen() {
   const filterTriggerRef = useRef<HTMLButtonElement>(null);
   const filterCloseRef = useRef<HTMLButtonElement>(null);
 
-  // Basic accessible-dialog behaviour: Escape closes it, focus moves into
-  // the dialog on open and back to the trigger button on close.
+  // Escape closes the dialog; focus moves in on open and back to the trigger on close.
   useEffect(() => {
     if (!filtersOpen) return;
     filterCloseRef.current?.focus();
+    const trigger = filterTriggerRef.current;
     const onKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") setFiltersOpen(false);
     };
     window.addEventListener("keydown", onKeyDown);
     return () => {
       window.removeEventListener("keydown", onKeyDown);
-      filterTriggerRef.current?.focus();
+      trigger?.focus();
     };
   }, [filtersOpen]);
 
-  // The Categories filter lets a shopper pull in other categories' products
-  // alongside the one they navigated to, rather than just narrowing it.
+  // Selecting other categories pulls their products in too, rather than only narrowing.
   const categoryIds = useMemo(
     () => [...new Set([categoryId as CategoryId, ...selectedCategories])],
     [categoryId, selectedCategories],

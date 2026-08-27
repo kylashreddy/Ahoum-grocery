@@ -21,14 +21,9 @@ interface CartState {
   lines: CartLine[];
   /** Notes surfaced to the user after reconciling a persisted cart against live data. */
   lastReconciliation: CartReconciliationNote[];
-  /**
-   * In-memory only (excluded from persistence, see `partialize` below).
-   * Guards against React StrictMode's intentional double-invocation of
-   * effects in development: without this, the second `reconcile()` call
-   * runs against already-fixed data, finds nothing to change, and silently
-   * wipes out the notes the first call just produced — so the banner never
-   * has a chance to render. See DEBUGGING.md.
-   */
+  // In-memory only (see `partialize`). Without this, StrictMode's double
+  // effect call runs reconcile() twice, and the second call — finding
+  // nothing left to fix — wipes the first call's notes. See DEBUGGING.md.
   hasReconciledThisSession: boolean;
   addItem: (product: Product, quantity?: number) => void;
   removeItem: (productId: string) => void;
@@ -45,15 +40,9 @@ export function maxAllowedQuantity(product: Product): number {
   return Math.min(product.stock, MAX_QUANTITY_PER_ITEM);
 }
 
-/**
- * Reconciles a persisted cart line against the live product catalogue.
- * Encodes the three cases required by engineering challenge B:
- *  - product no longer exists            -> drop the line
- *  - persisted price differs from live   -> adopt the live price, note it
- *  - quantity is zero / above stock      -> clamp into [1, stock] or drop
- * Returns the corrected line (or null if it should be dropped) plus a note
- * for the user when something changed. Kept pure so it can be unit tested.
- */
+// Reconciles one persisted line against live data: missing product or
+// zero stock -> drop; bad quantity -> clamp; stale price -> adopt live price.
+// Pure so it's unit-testable without a store. See DECISIONS.md #3.
 export function reconcileLine(
   line: CartLine,
 ): { line: CartLine | null; note: CartReconciliationNote | null } {
@@ -145,10 +134,7 @@ export const useCartStore = create<CartState>()(
       },
 
       setQuantity: (productId, quantity) => {
-        // Looks up live product data so this enforces the exact same cap as
-        // addItem — previously it didn't, so the cart screen's own stepper
-        // could push a line's quantity past MAX_QUANTITY_PER_ITEM for any
-        // product with stock above that cap. See DEBUGGING.md.
+        // Enforces the same cap as addItem — it didn't used to. See DEBUGGING.md.
         set((state) => {
           if (quantity <= 0) {
             return { lines: state.lines.filter((l) => l.productId !== productId) };

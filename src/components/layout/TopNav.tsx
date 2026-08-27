@@ -10,10 +10,7 @@ const LINKS = [
   { to: "/account", label: "Account", Icon: AccountIcon, end: false },
 ] as const;
 
-/**
- * Desktop-only persistent header nav — the desktop counterpart to the mobile
- * BottomTabBar. See DESIGN_NOTES.md, decision 1.
- */
+// Desktop counterpart to the mobile BottomTabBar. See DESIGN_NOTES.md #1.
 export function TopNav() {
   const itemCount = useCartStore((s) => s.lines.reduce((sum, l) => sum + l.quantity, 0));
 

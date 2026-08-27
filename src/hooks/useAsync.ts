@@ -9,13 +9,8 @@ export interface UseAsyncResult<T> {
   retry: () => void;
 }
 
-/**
- * Runs an async loader on mount (and whenever `deps` change), tracking
- * loading/success/error state and exposing a manual retry. Guards against
- * setting state after unmount and against a stale response overwriting a
- * newer one when deps change quickly (same latest-wins principle as the
- * search hook, applied generically).
- */
+// Generic load/error/retry state for a screen, with the same latest-wins
+// guard as the search hook so rapid dep changes can't apply a stale result.
 export function useAsync<T>(loader: (signal: AbortSignal) => Promise<T>, deps: React.DependencyList): UseAsyncResult<T> {
   const [data, setData] = useState<T | null>(null);
   const [status, setStatus] = useState<AsyncStatus>("loading");

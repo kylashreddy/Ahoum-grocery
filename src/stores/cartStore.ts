@@ -38,7 +38,12 @@ interface CartState {
   dismissReconciliation: () => void;
 }
 
-const MAX_QUANTITY_PER_ITEM = 20;
+export const MAX_QUANTITY_PER_ITEM = 20;
+
+/** The single source of truth for "how many of this product can one cart line hold". */
+export function maxAllowedQuantity(product: Product): number {
+  return Math.min(product.stock, MAX_QUANTITY_PER_ITEM);
+}
 
 /**
  * Reconciles a persisted cart line against the live product catalogue.
@@ -78,7 +83,7 @@ export function reconcileLine(
     };
   }
 
-  const cappedQuantity = Math.min(line.quantity, product.stock, MAX_QUANTITY_PER_ITEM);
+  const cappedQuantity = Math.min(line.quantity, maxAllowedQuantity(product));
   const safeQuantity = Math.max(cappedQuantity, 0);
 
   if (safeQuantity <= 0) {
@@ -119,16 +124,17 @@ export const useCartStore = create<CartState>()(
 
       addItem: (product, quantity = 1) => {
         set((state) => {
+          const cap = maxAllowedQuantity(product);
           const existing = state.lines.find((l) => l.productId === product.id);
           if (existing) {
-            const nextQty = Math.min(existing.quantity + quantity, product.stock, MAX_QUANTITY_PER_ITEM);
+            const nextQty = Math.min(existing.quantity + quantity, cap);
             return {
               lines: state.lines.map((l) =>
                 l.productId === product.id ? { ...l, quantity: nextQty, priceAtAdd: product.price } : l,
               ),
             };
           }
-          const qty = Math.min(quantity, product.stock, MAX_QUANTITY_PER_ITEM);
+          const qty = Math.min(quantity, cap);
           if (qty <= 0) return state;
           return { lines: [...state.lines, { productId: product.id, quantity: qty, priceAtAdd: product.price }] };
         });
@@ -139,12 +145,18 @@ export const useCartStore = create<CartState>()(
       },
 
       setQuantity: (productId, quantity) => {
+        // Looks up live product data so this enforces the exact same cap as
+        // addItem — previously it didn't, so the cart screen's own stepper
+        // could push a line's quantity past MAX_QUANTITY_PER_ITEM for any
+        // product with stock above that cap. See DEBUGGING.md.
         set((state) => {
           if (quantity <= 0) {
             return { lines: state.lines.filter((l) => l.productId !== productId) };
           }
+          const product = PRODUCTS.find((p) => p.id === productId);
+          const safeQuantity = product ? Math.min(quantity, maxAllowedQuantity(product)) : quantity;
           return {
-            lines: state.lines.map((l) => (l.productId === productId ? { ...l, quantity } : l)),
+            lines: state.lines.map((l) => (l.productId === productId ? { ...l, quantity: safeQuantity } : l)),
           };
         });
       },

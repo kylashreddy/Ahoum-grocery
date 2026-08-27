@@ -1,5 +1,5 @@
 import { Link, useNavigate } from "react-router-dom";
-import { useCartStore } from "../stores/cartStore";
+import { maxAllowedQuantity, useCartStore } from "../stores/cartStore";
 import { findProduct } from "../mocks/products";
 import { formatPrice } from "../lib/format";
 import { QuantityStepper } from "../components/QuantityStepper";
@@ -68,7 +68,7 @@ export function CartScreen() {
                     <QuantityStepper
                       label={product.name}
                       quantity={line.quantity}
-                      max={product.stock}
+                      max={maxAllowedQuantity(product)}
                       size="sm"
                       onDecrement={() => setQuantity(product.id, line.quantity - 1)}
                       onIncrement={() => setQuantity(product.id, line.quantity + 1)}

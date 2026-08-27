@@ -2,7 +2,7 @@ import { useCallback, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { fetchProductById } from "../api/products";
 import { useAsync } from "../hooks/useAsync";
-import { useCartStore } from "../stores/cartStore";
+import { maxAllowedQuantity, useCartStore } from "../stores/cartStore";
 import { useFavoritesStore } from "../stores/favoritesStore";
 import { formatPrice } from "../lib/format";
 import { Skeleton } from "../components/Skeleton";
@@ -89,9 +89,9 @@ export function ProductDetailScreen() {
                 <QuantityStepper
                   label={product.name}
                   quantity={qty}
-                  max={product.stock}
+                  max={maxAllowedQuantity(product)}
                   onDecrement={() => setQty((q) => Math.max(1, q - 1))}
-                  onIncrement={() => setQty((q) => Math.min(product.stock, q + 1))}
+                  onIncrement={() => setQty((q) => Math.min(maxAllowedQuantity(product), q + 1))}
                 />
                 <button
                   type="button"

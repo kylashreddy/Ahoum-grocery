@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import type { Product } from "../types/product";
 import { formatPrice } from "../lib/format";
-import { useCartStore } from "../stores/cartStore";
+import { maxAllowedQuantity, useCartStore } from "../stores/cartStore";
 import { useFavoritesStore } from "../stores/favoritesStore";
 
 interface ProductCardProps {
@@ -55,7 +55,7 @@ export function ProductCard({ product }: ProductCardProps) {
             <button
               type="button"
               onClick={() => addItem(product, 1)}
-              disabled={quantity >= product.stock}
+              disabled={quantity >= maxAllowedQuantity(product)}
               aria-label={`Increase quantity of ${product.name}`}
               className="flex h-7 w-7 items-center justify-center rounded-full bg-brand-500 text-white active:scale-95 disabled:cursor-not-allowed disabled:bg-brand-200"
             >

@@ -21,6 +21,15 @@ interface CartState {
   lines: CartLine[];
   /** Notes surfaced to the user after reconciling a persisted cart against live data. */
   lastReconciliation: CartReconciliationNote[];
+  /**
+   * In-memory only (excluded from persistence, see `partialize` below).
+   * Guards against React StrictMode's intentional double-invocation of
+   * effects in development: without this, the second `reconcile()` call
+   * runs against already-fixed data, finds nothing to change, and silently
+   * wipes out the notes the first call just produced — so the banner never
+   * has a chance to render. See DEBUGGING.md.
+   */
+  hasReconciledThisSession: boolean;
   addItem: (product: Product, quantity?: number) => void;
   removeItem: (productId: string) => void;
   setQuantity: (productId: string, quantity: number) => void;
@@ -106,6 +115,7 @@ export const useCartStore = create<CartState>()(
     (set, get) => ({
       lines: [],
       lastReconciliation: [],
+      hasReconciledThisSession: false,
 
       addItem: (product, quantity = 1) => {
         set((state) => {
@@ -142,6 +152,7 @@ export const useCartStore = create<CartState>()(
       clear: () => set({ lines: [], lastReconciliation: [] }),
 
       reconcile: () => {
+        if (get().hasReconciledThisSession) return;
         const { lines } = get();
         const nextLines: CartLine[] = [];
         const notes: CartReconciliationNote[] = [];
@@ -150,11 +161,16 @@ export const useCartStore = create<CartState>()(
           if (fixed) nextLines.push(fixed);
           if (note) notes.push(note);
         }
-        set({ lines: nextLines, lastReconciliation: notes });
+        set({ lines: nextLines, lastReconciliation: notes, hasReconciledThisSession: true });
       },
 
       dismissReconciliation: () => set({ lastReconciliation: [] }),
     }),
-    { name: "ahoum-cart" },
+    {
+      name: "ahoum-cart",
+      // Only `lines` is persisted: reconciliation notes and the in-session
+      // guard above must not survive a reload, or they'd desync from it.
+      partialize: (state) => ({ lines: state.lines }),
+    },
   ),
 );

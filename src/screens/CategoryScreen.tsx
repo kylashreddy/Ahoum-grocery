@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
 import type { Brand, CategoryId } from "../types/product";
 import { fetchProductsByCategory } from "../api/products";
@@ -17,6 +17,23 @@ export function CategoryScreen() {
   const [selectedBrands, setSelectedBrands] = useState<Brand[]>([]);
   const [inStockOnly, setInStockOnly] = useState(false);
   const [filtersOpen, setFiltersOpen] = useState(false);
+  const filterTriggerRef = useRef<HTMLButtonElement>(null);
+  const filterCloseRef = useRef<HTMLButtonElement>(null);
+
+  // Basic accessible-dialog behaviour: Escape closes it, focus moves into
+  // the dialog on open and back to the trigger button on close.
+  useEffect(() => {
+    if (!filtersOpen) return;
+    filterCloseRef.current?.focus();
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setFiltersOpen(false);
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => {
+      window.removeEventListener("keydown", onKeyDown);
+      filterTriggerRef.current?.focus();
+    };
+  }, [filtersOpen]);
 
   const loader = useCallback((signal: AbortSignal) => fetchProductsByCategory(categoryId as CategoryId, { signal }), [categoryId]);
   const { data, status, retry } = useAsync(loader, [categoryId]);
@@ -44,6 +61,7 @@ export function CategoryScreen() {
         title={categoryName(categoryId)}
         right={
           <button
+            ref={filterTriggerRef}
             type="button"
             onClick={() => setFiltersOpen(true)}
             aria-label="Open filters"
@@ -95,6 +113,7 @@ export function CategoryScreen() {
         <div className="fixed inset-0 z-40 flex flex-col bg-surface lg:hidden" role="dialog" aria-modal="true" aria-label="Filters">
           <div className="flex items-center gap-3 border-b border-black/5 px-4 py-3.5">
             <button
+              ref={filterCloseRef}
               type="button"
               onClick={() => setFiltersOpen(false)}
               aria-label="Close filters"

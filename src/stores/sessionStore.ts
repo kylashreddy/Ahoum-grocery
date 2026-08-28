@@ -1,10 +1,14 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
+export type AuthProvider = "email" | "google";
+
 interface SessionState {
   isAuthenticated: boolean;
   name: string | null;
-  logIn: (name: string) => void;
+  email: string | null;
+  provider: AuthProvider | null;
+  logIn: (params: { name: string; email: string; provider: AuthProvider }) => void;
   logOut: () => void;
 }
 
@@ -14,8 +18,10 @@ export const useSessionStore = create<SessionState>()(
     (set) => ({
       isAuthenticated: false,
       name: null,
-      logIn: (name) => set({ isAuthenticated: true, name }),
-      logOut: () => set({ isAuthenticated: false, name: null }),
+      email: null,
+      provider: null,
+      logIn: ({ name, email, provider }) => set({ isAuthenticated: true, name, email, provider }),
+      logOut: () => set({ isAuthenticated: false, name: null, email: null, provider: null }),
     }),
     { name: "ahoum-session" },
   ),

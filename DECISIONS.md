@@ -63,6 +63,6 @@ Non-trivial decisions, why they went the way they did, and what was traded off. 
 
 **Options considered.**
 - Real Google OAuth (`@react-oauth/google` or a hand-rolled redirect flow) — would need a registered OAuth client ID, an authorized origin/redirect URI in Google Cloud Console, and realistically a backend to exchange the code for a token. None of that fits "no backend required," and a client ID checked into a public assignment repo would be a real credential left lying around for no functional benefit in a demo.
-- Mock sign-in (chosen): `src/api/auth.ts`'s `signInWithGoogle()` runs through the same `simulateNetwork` latency used everywhere else and resolves to one of a few fake profiles, exactly the way `placeOrder` mocks checkout. It exercises the same UI states (pending button label, session store update, redirect home) a real integration would.
+- Mock sign-in (chosen): `src/api/auth.ts`'s `signInWithGoogle()` runs through the same `simulateNetwork` latency used everywhere else and resolves to a fixed profile, exactly the way `placeOrder` mocks checkout. It exercises the same UI states (pending button label, session store update, redirect home) a real integration would.
 
 **Trade-off.** It's not a real Google login — anyone can "sign in with Google" without a Google account. That's fine here: the login screen's job in this brief is to demonstrate the UI and session-state wiring, not to stand up real third-party auth for a project with no backend to hand a token to.

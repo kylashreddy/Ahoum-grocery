@@ -11,8 +11,11 @@ export function CheckoutFailureScreen() {
 
   return (
     <div className="mx-auto flex min-h-[80dvh] max-w-md flex-col items-center justify-center px-6 text-center">
-      <div className="flex h-20 w-20 items-center justify-center rounded-full bg-danger-bg text-4xl" aria-hidden="true">
-        ❌
+      <div className="relative flex h-24 w-24 items-center justify-center rounded-full bg-surface-muted text-5xl ring-1 ring-black/5" aria-hidden="true">
+        🛍️
+        <span className="absolute -right-1 -top-1 flex h-7 w-7 items-center justify-center rounded-full bg-danger text-sm font-bold text-white ring-4 ring-surface">
+          !
+        </span>
       </div>
       <h1 className="mt-5 text-xl font-semibold text-ink">Order failed</h1>
       <p className="mt-2 text-sm text-ink-muted">

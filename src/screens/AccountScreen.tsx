@@ -184,6 +184,14 @@ export function AccountScreen() {
             </>
           )}
         </p>
+
+        <button
+          type="button"
+          onClick={() => navigate("/splash")}
+          className="mt-3 block w-full text-center text-xs font-medium text-ink-muted hover:text-brand-600 hover:underline"
+        >
+          New here? Take a quick tour
+        </button>
       </form>
     </div>
   );

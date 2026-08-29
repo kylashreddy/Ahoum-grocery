@@ -48,7 +48,7 @@ src/
 
 **State management.** Three separate Zustand stores, split by actual lifecycle/ownership rather than one global blob: `cartStore` (persisted + reconciled), `favoritesStore` (persisted, independent of cart), `sessionStore` (persisted, the mock login state). No Context/Redux, per the brief.
 
-**Routing.** React Router, one route per screen (`/`, `/explore`, `/category/:id`, `/product/:id`, `/search`, `/cart`, `/favorites`, `/checkout`, `/checkout/success`, `/checkout/failure`, `/account`).
+**Routing.** React Router, one route per screen (`/`, `/explore`, `/category/:id`, `/product/:id`, `/search`, `/cart`, `/favorites`, `/checkout`, `/checkout/success`, `/checkout/failure`, `/account`), plus a first-run tour (`/splash`, `/onboarding`, `/login/phone`, `/login/verify`, `/select-location`) that only gates `/` once — see DECISIONS.md #7.
 
 **Engineering challenge A (stale search):** `src/hooks/useProductSearch.ts` + `src/lib/staleGuard.ts`. Debounced input → `AbortController` cancels the previous in-flight request → a `LatestRequestGuard` independently discards the *result* of any request that's no longer the latest, even if abort didn't land in time. Proven with unit tests in `src/test/staleGuard.test.ts` (deferred promises resolved deliberately out of order); also visible live on the Search screen via "Show stale-response log".
 

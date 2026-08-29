@@ -13,6 +13,7 @@ export interface Category {
   id: CategoryId;
   name: string;
   color: string;
+  image: string;
 }
 
 // Exact brand names from the Figma Filters screen — kept verbatim for fidelity.

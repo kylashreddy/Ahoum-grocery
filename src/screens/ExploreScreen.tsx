@@ -46,10 +46,15 @@ export function ExploreScreen() {
               <Link
                 key={cat.id}
                 to={`/category/${cat.id}`}
-                className="flex h-28 flex-col justify-end rounded-2xl p-4 text-sm font-semibold text-ink ring-1 ring-black/5 transition hover:-translate-y-0.5 hover:shadow-md"
-                style={{ backgroundColor: cat.color }}
+                className="group relative flex h-36 flex-col justify-end overflow-hidden rounded-2xl shadow-sm ring-1 ring-black/5 transition duration-300 hover:-translate-y-1 hover:shadow-xl sm:h-40"
               >
-                {cat.name}
+                <img
+                  src={cat.image}
+                  alt=""
+                  className="absolute inset-0 h-full w-full object-cover transition duration-300 group-hover:scale-110"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/65 via-black/10 to-transparent" />
+                <span className="relative z-10 p-4 text-sm font-semibold text-white drop-shadow">{cat.name}</span>
               </Link>
             ))}
           </div>
